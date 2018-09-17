@@ -34,8 +34,13 @@ def dump(filename):
     yaml.add_representer(OrderedDict, ordered_dict_representer)
     yaml.add_representer(LiteralString, literal_string_representer)
 
-    monitors = {'monitors': list(map(lambda m: normalize(m), read_all()))}
-    print('INFO: writing {} monitors to {}.'.format(
-        len(monitors['monitors']), filename))
+    monitors = sorted(
+        map(lambda m: normalize(m), read_all()), key=lambda m: m['name'])
+    print('INFO: writing {} monitors to {}.'.format(len(monitors), filename))
     with open(filename, 'w') as stream:
-        yaml.dump(monitors, stream=stream, indent=2, default_flow_style=False)
+        yaml.dump({
+            'monitors': monitors
+        },
+                  stream=stream,
+                  indent=2,
+                  default_flow_style=False)
