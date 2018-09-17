@@ -15,7 +15,7 @@ setup(
     name="datadog-deployer",
     packages=["datadog_deployer"],
     entry_points={
-        "console_scripts": ['datadog-deployer = datadog_deployer:main']
+        "console_scripts": ['datadog-deployer = datadog_deployer.main:main']
     },
     version=version,
     description="Deployment of datadog monitors.",
