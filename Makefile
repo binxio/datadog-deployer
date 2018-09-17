@@ -9,10 +9,8 @@ env:		## creates a virtual python environment  for this project
 info:		## shows current python environment
 	pipenv --venv
 
-clobber:	## remove virtual python environment
+clobber: clean	## remove virtual python environment
 	pipenv --rm
-	rm -rf datadog_deployer.egg-info
-	find . -name \*.pyc | xargs rm -rf
 
 test: fmt run_test
 
@@ -20,11 +18,13 @@ fmt:        ## runs code formatter
 	pipenv run yapf --recursive --in-place datadog_deployer
 
 
-dist:      ## create a distribution
+dist: datadog_deployer/*.py README.rst setup.py Pipfile.lock ## create a distribution
 	pipenv run python setup.py bdist_wheel
 
-clean:
-	rm -rf dist
+clean:		## remove all intermediate files
+	rm -rf datadog_deployer.egg-info
+	rm -rf dist build
+	find . -name \*.pyc | xargs rm -rf
 
-publish:
+publish: dist ## publish the package to pypi
 	pipenv run twine upload dist/*
