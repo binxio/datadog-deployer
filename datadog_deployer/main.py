@@ -46,9 +46,15 @@ def do_dump(account, filename):
     default=False,
     is_flag=True,
     help='only show changes that would be applied.')
-def do_deploy(account, filename, verbose, dry_run):
+@click.option(
+    '--force-delete',
+    default=False,
+    is_flag=True,
+    help='monitors in datadog not defined in the file.')
+def do_deploy(account, filename, force_delete, verbose, dry_run):
     connect(account)
-    deploy(filename, verbose=verbose, dry_run=dry_run)
+    deploy(
+        filename, force_delete=force_delete, verbose=verbose, dry_run=dry_run)
 
 
 if __name__ == '__main__':

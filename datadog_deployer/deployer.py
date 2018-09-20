@@ -31,29 +31,36 @@ def calculate_operations(new_monitors: List[Monitor]):
     return insert, update, delete, noop
 
 
-def deploy(filename, verbose=True, dry_run=True):
+def deploy(filename, force_delete=False, verbose=True, dry_run=True):
     with open(filename, 'r') as stream:
         dsc = yaml.load(stream, Loader=yaml.Loader)
 
     monitors = list(map(lambda m: Monitor(m), dsc['monitors']))
     inserts, updates, deletes, noops = calculate_operations(monitors)
-    print('INFO: {} inserts, {} updates, {} deletes and {} unchanged.'.format(
-        len(inserts), len(updates), len(deletes), len(noops)))
+    print('INFO: {} inserts, {} updates, {} {} and {} unchanged.'.format(
+        len(inserts), len(updates), len(deletes), ('deletes' if force_delete else 'unmanaged'), len(noops)))
 
     for monitor in inserts:
         if dry_run or verbose:
-            print('INFO: inserting {}'.format(monitor['name']))
+            print('INFO: inserting "{}"'.format(monitor['name']))
         if not dry_run:
             api.Monitor.create(**monitor)
 
     for monitor in updates:
         if dry_run or verbose:
-            print('INFO: updating {}'.format(monitor['name']))
+            print('INFO: updating "{}"'.format(monitor['name']))
         if not dry_run:
             api.Monitor.update(**monitor)
 
-    for monitor in deletes:
-        if dry_run or verbose:
-            print('INFO: deleting {}'.format(monitor['name']))
-        if not dry_run:
-            api.Monitor.delete(id=monitor['id'])
+    if force_delete:
+        for monitor in deletes:
+            if dry_run or verbose:
+                print('INFO: deleting "{}"'.format(monitor['name']))
+            if not dry_run:
+                api.Monitor.delete(id=monitor['id'])
+    else:
+        for monitor in deletes:
+            if dry_run or verbose:
+                print(
+                    'INFO: "{}" not defined in file. use --force-delete to delete.'
+                    .format(monitor['name']))

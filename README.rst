@@ -16,8 +16,8 @@ Options:
 datadog-deployer deploy
 
 Deploys the datadog monitor definitions from `filename`. Compares the monitors with the deployed monitors and
-determines for each monitor whether to insert or update. Monitors defined in datadog which are not in defined in the file will 
-be deleted.
+determines for each monitor whether to insert or update. Monitors defined in datadog which are not in defined in the file are
+left, unless `--force-delete` is specified.
 
 
 Options:
@@ -25,6 +25,7 @@ Options:
   --filename PATH  to deploy monitors from.
   --verbose        showing change details that are applied.
   --dry-run        only show changes that would be applied.
+  --force-delete   monitors in datadog not defined in the file.
   --help           Show this message and exit.
 
 
@@ -36,8 +37,15 @@ Dump the current monitor definitions::
 
 Update the monitor definitions::
 
-	$ datadog-deployer deploy --filename dd-monitors.yaml --dry-run --verbose
-	INFO: 5 inserts, 1 updates, 3 deletes and 33 unchanged.
+	$ datadog-deployer deploy --filename dd-monitors.yaml
+	INFO: 5 inserts, 1 updates, 2 unmanaged and 33 unchanged.
+	INFO: "VPN connectivity" not defined in file. use --force-delete to delete.
+	INFO: "Invalid objects in Oracle" not defined in file. use --force-delete to delete.
+
+If you want to delete unmanaged monitors, type::
+
+	$ datadog-deployer deploy --filename dd-monitors.yaml --force-delete 
+	INFO: 0 inserts, 0 updates, 2 deletes and 39 unchanged.
 
 **File formats**
 The file ~/.datadog.ini is a Python configuration file from which the Datadog connection parameters are read.  At least it will
