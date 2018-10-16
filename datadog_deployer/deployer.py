@@ -1,3 +1,4 @@
+import sys
 from ruamel import yaml
 from datadog_deployer.monitor import Monitor, read_all
 from typing import List
@@ -32,6 +33,7 @@ def calculate_operations(new_monitors: List[Monitor]):
 
 
 def deploy(filename, force_delete=False, verbose=True, dry_run=True):
+    errors = []
     with open(filename, 'r') as stream:
         dsc = yaml.load(stream, Loader=yaml.Loader)
 
@@ -44,23 +46,36 @@ def deploy(filename, force_delete=False, verbose=True, dry_run=True):
         if dry_run or verbose:
             print('INFO: inserting "{}"'.format(monitor['name']))
         if not dry_run:
-            api.Monitor.create(**monitor)
+            result = api.Monitor.create(**monitor)
+            if 'errors' in result:
+                errors.append(result['errors'])
+                sys.stderr.write('ERROR: {}\n'.format(result['errors']))
+
 
     for monitor in updates:
         if dry_run or verbose:
             print('INFO: updating "{}"'.format(monitor['name']))
         if not dry_run:
-            api.Monitor.update(**monitor)
+            result = api.Monitor.update(**monitor)
+            if 'errors' in result:
+                errors.append(result['errors'])
+                sys.stderr.write('ERROR: {}\n'.format(result['errors']))
 
     if force_delete:
         for monitor in deletes:
             if dry_run or verbose:
                 print('INFO: deleting "{}"'.format(monitor['name']))
             if not dry_run:
-                api.Monitor.delete(id=monitor['id'])
+                result = api.Monitor.delete(id=monitor['id'])
+                if 'errors' in result:
+                    errors.append(result['errors'])
+                    sys.stderr.write('ERROR: {}\n'.format(result['errors']))
     else:
         for monitor in deletes:
             if dry_run or verbose:
                 print(
                     'INFO: "{}" not defined in file. use --force-delete to delete.'
                     .format(monitor['name']))
+
+    if errors:
+        sys.exit(1)
