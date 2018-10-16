@@ -40,7 +40,8 @@ def deploy(filename, force_delete=False, verbose=True, dry_run=True):
     monitors = list(map(lambda m: Monitor(m), dsc['monitors']))
     inserts, updates, deletes, noops = calculate_operations(monitors)
     print('INFO: {} inserts, {} updates, {} {} and {} unchanged.'.format(
-        len(inserts), len(updates), len(deletes), ('deletes' if force_delete else 'unmanaged'), len(noops)))
+        len(inserts), len(updates), len(deletes),
+        ('deletes' if force_delete else 'unmanaged'), len(noops)))
 
     for monitor in inserts:
         if dry_run or verbose:
@@ -50,7 +51,6 @@ def deploy(filename, force_delete=False, verbose=True, dry_run=True):
             if 'errors' in result:
                 errors.append(result['errors'])
                 sys.stderr.write('ERROR: {}\n'.format(result['errors']))
-
 
     for monitor in updates:
         if dry_run or verbose:
