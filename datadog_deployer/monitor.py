@@ -32,13 +32,23 @@ class Monitor(dict):
 
         for p in property_order:
             if p in self and self[p]:
-                result[p] = self[p]
+                result[p] = order_dictionary(self[p])
 
         for p in self.keys():
             if p not in property_order and p not in meta:
                 result[p] = self[p]
 
         return result
+
+
+def order_dictionary(d):
+    if isinstance(d, dict):
+        result = OrderedDict()
+        for key in sorted(d):
+            result[key] = order_dictionary(d[key])
+        return result
+    else:
+        return d
 
 
 def read_all() -> List[Monitor]:

@@ -1,7 +1,8 @@
 import click
-from datadog_deployer import dump
-from datadog_deployer import deploy
+
 from datadog_deployer import connect
+from datadog_deployer import deploy
+from datadog_deployer import dump
 
 
 @click.group()

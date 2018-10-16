@@ -1,5 +1,7 @@
-from ruamel import yaml
 from collections import OrderedDict
+
+from ruamel import yaml
+
 from datadog_deployer.monitor import Monitor, read_all
 
 

@@ -1,11 +1,29 @@
+import difflib
+import json
 import sys
-from ruamel import yaml
-from datadog_deployer.monitor import Monitor, read_all
+from io import StringIO
 from typing import List
+
 from datadog import api
+from ruamel import yaml
+
+from datadog_deployer.monitor import Monitor, read_all
 
 
-def calculate_operations(new_monitors: List[Monitor]):
+def show_diff(monitor, deployed):
+    result = StringIO()
+    new_monitor = StringIO()
+    current_monitor = StringIO()
+    json.dump(monitor, new_monitor, indent=2)
+    json.dump(deployed, current_monitor, indent=2)
+    for text in difflib.unified_diff(current_monitor.getvalue().split("\n"),
+                                     new_monitor.getvalue().split("\n")):
+        if text[:3] not in ['---', '+++', '@@ ']:
+            result.write('{}\n'.format(text))
+    return result.getvalue()
+
+
+def calculate_operations(new_monitors: List[Monitor], verbose=True):
     monitors = {v['name']: v for v in new_monitors}
     deployed = {v['name']: v for v in read_all()}
 
@@ -21,6 +39,11 @@ def calculate_operations(new_monitors: List[Monitor]):
             else:
                 monitor['id'] = deployed[name]['id']
                 update.append(monitor)
+                if verbose:
+                    sys.stdout.write('INFO: {} has changes\n{}'.format(
+                        name,
+                        show_diff(monitor.normalized(),
+                                  deployed[name].normalized())))
         else:
             insert.append(monitor)
 
@@ -32,13 +55,13 @@ def calculate_operations(new_monitors: List[Monitor]):
     return insert, update, delete, noop
 
 
-def deploy(filename, force_delete=False, verbose=True, dry_run=True):
+def deploy(filename, force_delete=False, verbose=True, dry_run=False):
     errors = []
     with open(filename, 'r') as stream:
         dsc = yaml.load(stream, Loader=yaml.Loader)
 
     monitors = list(map(lambda m: Monitor(m), dsc['monitors']))
-    inserts, updates, deletes, noops = calculate_operations(monitors)
+    inserts, updates, deletes, noops = calculate_operations(monitors, verbose)
     print('INFO: {} inserts, {} updates, {} {} and {} unchanged.'.format(
         len(inserts), len(updates), len(deletes),
         ('deletes' if force_delete else 'unmanaged'), len(noops)))

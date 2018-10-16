@@ -1,6 +1,7 @@
 import sys
-from os import path
 from configparser import ConfigParser
+from os import path
+
 from datadog import initialize
 
 allowed_properties = {
