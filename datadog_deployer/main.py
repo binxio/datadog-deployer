@@ -3,6 +3,8 @@ import click
 from datadog_deployer import connect
 from datadog_deployer import deploy
 from datadog_deployer import dump
+from datadog_deployer import query_metric
+from time import time
 
 
 @click.group()
@@ -25,6 +27,15 @@ def do_dump(account, filename):
     connect(account)
     dump(filename)
 
+
+@main.command(name='query-metric')
+@click.option('--account', required=False, default="DEFAULT", help='name of the Datadog account.')
+@click.option('--start', required=False, default=(int(time()) - 300), help='start time  (seconds since the epoch)')
+@click.option('--end', required=False, default=int(time()), help='end time (seconds since the epoch)')
+@click.argument('query', nargs=1)
+def do_query_metric(account, query, start, end):
+    connect(account)
+    query_metric(query, start, end)
 
 @main.command(name='deploy')
 @click.option(
