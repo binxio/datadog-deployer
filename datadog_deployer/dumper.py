@@ -39,10 +39,11 @@ def dump(filename):
     monitors = sorted(
         map(lambda m: normalize(m), read_all()), key=lambda m: m['name'])
     print('INFO: writing {} monitors to {}.'.format(len(monitors), filename))
+    y = yaml.YAML(typ='unsafe', pure=True)
+    y.indent = 2
+    y.default_flow_style = False
     with open(filename, 'w') as stream:
-        yaml.dump({
+        y.dump({
             'monitors': monitors
-        },
-                  stream=stream,
-                  indent=2,
-                  default_flow_style=False)
+        }, stream
+        )

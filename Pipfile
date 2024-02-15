@@ -11,7 +11,8 @@ twine = "*"
 pycodestyle = "*"
 
 [requires]
-python_version = "3.7"
+python_version = "3.9"
 
 [packages]
+datadog = "*"
 datadog_deployer = {path = ".", editable = true}
