@@ -111,5 +111,4 @@ venv.bak/
 dmypy.json
 
 *.swp
-.idea/workspace.*
-.idea/tasks.*
+.idea/*
