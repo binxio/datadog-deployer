@@ -58,7 +58,7 @@ def calculate_operations(new_monitors: List[Monitor], verbose=True):
 def deploy(filename, force_delete=False, verbose=True, dry_run=False):
     errors = []
     with open(filename, 'r') as stream:
-        dsc = yaml.load(stream, Loader=yaml.Loader)
+        dsc = yaml.YAML(typ='rt').load(stream)
 
     monitors = list(map(lambda m: Monitor(m), dsc['monitors']))
     inserts, updates, deletes, noops = calculate_operations(monitors, verbose)

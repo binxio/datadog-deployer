@@ -1,8 +1,10 @@
+import logging
 import sys
 from configparser import ConfigParser
 from os import path
 
-from datadog import initialize
+import requests
+from datadog import initialize, api
 
 allowed_properties = {
     'api_key', 'app_key', 'proxies', 'api_host', 'statsd_host', 'statsd_port',
@@ -58,12 +60,14 @@ def read(section: str = 'DEFAULT'):
         for (k, v) in parser.items(section) if k in allowed_properties
     }
 
+def validate_api_key():
+    response = requests.get(f'{api._api_host}/api/v1/validate',
+                 headers={'DD-API-KEY': api._api_key, 'DD-APPLICATION-KEY': api._application_key})
+    if response.status_code != 200 or not response.json().get('valid'):
+        logging.error('Invalid API key configured')
+        exit(1)
 
 def connect(section: str = 'DEFAULT'):
     kwargs = read(section)
-    if 'api_key' in kwargs and 'app_key' in kwargs:
-        initialize(**kwargs)
-    else:
-        sys.stderr.write(
-            'ERROR: api_key/app_key missing from ~/.datadog.ini\n')
-        sys.exit(1)
+    initialize(**kwargs)
+    validate_api_key()
